@@ -42,6 +42,13 @@ data_raw = pd.read_csv('healthcare-dataset-stroke-data.csv')
 
 # checking if there duplicated id
 print(data)
+no_duplicates = True
+is_duplicated = data.duplicated()
+for x in is_duplicated:
+    if x:
+        no_duplicates = False
+if no_duplicates:
+    print('No duplicate id in the Dataset')
 print_hl()
 # ---------- Filling N/A with mean value --------------
 # Removing outliers to calculate mean in bmi
@@ -153,26 +160,23 @@ matrix = data.corr(method='pearson', min_periods=1)
 print("Correlation matrix: \n", matrix)
 
 # --------------------- train test split ------------------------
+# --------------------- train test split ------------------------
 print('> Test Train Split')
-test_data = filtered_data
+X = filtered_data
+
 # splitting
-test_01_train, test_01_test = train_test_split(test_data, test_size=0.2, random_state=42)
-test_02_train, test_02_test = train_test_split(test_data, test_size=0.33, random_state=51)
-test_03_train, test_03_test = train_test_split(test_data, test_size=0.12, random_state=35)
+X_train, X_test, Y_train, Y_test = train_test_split(X, test_size=0.2, random_state=42)
 # printing test train sets
-print('> Train Set 1')
-print(test_01_train)
-print('> Test Set 1')
-print(test_01_test)
-print('> Train Set 2')
-print(test_02_train)
-print('> Test Set 2')
-print(test_02_test)
-print('> Train Set 3')
-print(test_03_train)
-print('> Test Set 3')
-print(test_03_test)
+print('> Train Set X')
+print(X_train)
+print('> Test Set X')
+print(X_test)
+print('> Train Set Y')
+print(Y_train)
+print('> Test Set Y')
+print(Y_train)
 print_hl()
+
 
 # --------------- linear regression ---------------------
 age_mean = filtered_data.age.mean()
