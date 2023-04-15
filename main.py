@@ -9,6 +9,7 @@ import seaborn as sns
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import KBinsDiscretizer
+from sklearn.tree import DecisionTreeClassifier
 
 plt.style.use("seaborn-v0_8")
 
@@ -145,6 +146,10 @@ for i in normalize_features:
 print('> z-score Normalized filtered data ')
 print(z_filtered_data_frame)
 print_hl()
+
+# --------------- Correlation Matrix ---------------------
+matrix = data.corr(method='pearson', min_periods=1)
+print("Correlation matrix: \n", matrix)
 
 
 # --------------- linear regression ---------------------
