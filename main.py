@@ -105,6 +105,7 @@ print('**** Data Set after excluding outliers an filling missing data ****')
 print(filtered_data)
 print_hl()
 
+# -------------------------- Data Transformation --------------------------------
 
 # ---------- Convert all categorical data into numeric --------------
 Label_Encoder = LabelEncoder()
@@ -122,8 +123,28 @@ print(c.bin_edges_)
 dataframe = discretization.transform(data)
 print("Data after discretization: \n", dataframe)
 
+# ------------------------- Normalization ---------------------------
+normalize_features = ['age', 'avg_glucose_level', 'bmi']
+# --------------- MinMax Normalization ------------------
+norm_filtered_data_frame = pd.DataFrame(filtered_data)
+filtered_num_data_frame = norm_filtered_data_frame[normalize_features]
+normalizer = MinMaxScaler(feature_range=(0, 1))
+norm_data_frame = normalizer.fit_transform(filtered_num_data_frame)
+norm_filtered_data_frame[normalize_features] = norm_data_frame
+print('> Min Max Normalized range 0 -> 1 filtered data ')
+print(norm_filtered_data_frame)
+print_hl()
 
-# --------------- calculating means ---------------------
+# --------------- z-score Normalization ------------------
+z_filtered_data_frame = pd.DataFrame(filtered_data)
+
+for i in normalize_features:
+    z_filtered_data_frame[i] = zscore(z_filtered_data_frame[i])
+print('> z-score Normalized filtered data ')
+print(z_filtered_data_frame)
+print_hl()
+
+
 # --------------- linear regression ---------------------
 age_mean = filtered_data.age.mean()
 avg_glc_mean = filtered_data.avg_glucose_level.mean()
@@ -141,8 +162,46 @@ b0 = avg_glc_mean - (b1 * bmi_mean)
 
 # --------------------- plotting ------------------------
 
-# plt.scatter(filtered_data.avg_glucose_level, filtered_data.stroke, color='blue')
-# sns.regplot(x="stroke", y="age", data=filtered_data)
+# ------------------ Scatter plotting -------------------
+
+# sns.regplot(x="bmi", y="avg_glucose_level", data=data)
+# plt.title("BMI / Average glucose level plot with outliers")
+# plt.show()
+# sns.regplot(x="age", y="bmi", data=data)
+# plt.title("Age / BMI plot with outliers")
+# plt.show()
+# sns.regplot(x="age", y="avg_glucose_level", data=data)
+# plt.title("Age / Average glucose level plot with outliers")
+# plt.show()
+# # plotting without outliers
+# sns.regplot(x="bmi", y="avg_glucose_level", data=filtered_data)
+# plt.title("BMI / Average glucose level plot without outliers")
+# plt.show()
+# sns.regplot(x="age", y="bmi", data=filtered_data)
+# plt.title("Age / BMI plot without outliers")
+# plt.show()
+# sns.regplot(x="age", y="avg_glucose_level", data=filtered_data)
+# plt.title("Age / Average glucose level plot without outliers")
+# plt.show()
+# plotting MinMax normalized filtered data
+# sns.regplot(x="bmi", y="avg_glucose_level", data=norm_filtered_data_frame)
+# plt.title("BMI / Average glucose level plot MinMax normalized filtered data")
+# plt.show()
+# sns.regplot(x="age", y="bmi", data=norm_filtered_data_frame)
+# plt.title("Age / BMI plot MinMax normalized filtered data")
+# plt.show()
+# sns.regplot(x="age", y="avg_glucose_level", data=norm_filtered_data_frame)
+# plt.title("Age / Average glucose level plot MinMax normalized filtered data")
+# plt.show()
+# plotting z-score normalized filtered data
+# sns.regplot(x="bmi", y="avg_glucose_level", data=z_filtered_data_frame)
+# plt.title("BMI / Average glucose level plot z-score normalized filtered data")
+# plt.show()
+# sns.regplot(x="age", y="bmi", data=z_filtered_data_frame)
+# plt.title("Age / BMI plot z-score normalized filtered data")
+# plt.show()
+# sns.regplot(x="age", y="avg_glucose_level", data=z_filtered_data_frame)
+# plt.title("Age / Average glucose level plot z-score normalized filtered data")
 # plt.show()
 
 
