@@ -10,6 +10,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import KBinsDiscretizer
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.model_selection import train_test_split
 
 plt.style.use("seaborn-v0_8")
 
@@ -151,6 +152,27 @@ print_hl()
 matrix = data.corr(method='pearson', min_periods=1)
 print("Correlation matrix: \n", matrix)
 
+# --------------------- train test split ------------------------
+print('> Test Train Split')
+test_data = filtered_data
+# splitting
+test_01_train, test_01_test = train_test_split(test_data, test_size=0.2, random_state=42)
+test_02_train, test_02_test = train_test_split(test_data, test_size=0.33, random_state=51)
+test_03_train, test_03_test = train_test_split(test_data, test_size=0.12, random_state=35)
+# printing test train sets
+print('> Train Set 1')
+print(test_01_train)
+print('> Test Set 1')
+print(test_01_test)
+print('> Train Set 2')
+print(test_02_train)
+print('> Test Set 2')
+print(test_02_test)
+print('> Train Set 3')
+print(test_03_train)
+print('> Test Set 3')
+print(test_03_test)
+print_hl()
 
 # --------------- linear regression ---------------------
 age_mean = filtered_data.age.mean()
