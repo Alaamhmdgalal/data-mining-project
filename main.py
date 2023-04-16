@@ -11,6 +11,7 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import KBinsDiscretizer
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
 
 plt.style.use("seaborn-v0_8")
 
@@ -50,15 +51,20 @@ for x in is_duplicated:
 if no_duplicates:
     print('No duplicate id in the Dataset')
 print_hl()
+
 # ---------- Filling N/A with mean value --------------
 # Removing outliers to calculate mean in bmi
 clean_bmi_list = [x for x in data['bmi'] if str(x) != 'nan']
+print("Ignoring N/A tuples in bmi list: \n", clean_bmi_list)
 outliers_remove = [clean_bmi_list]
 bmi_no_outliers = remove_outliers_iqr(outliers_remove, 0)
 # calculating mean of bmi without outliers
 data_bmi_mean = np.mean(bmi_no_outliers)
 # Filling bmi N/A values with mean Data Cleaning
 data['bmi'] = data['bmi'].replace(np.NaN, data_bmi_mean)
+print("Filling bmi N/A values with mean values: \n", data['bmi'])
+print_hl()
+
 
 # ---------- Filling unknown smoking data --------------
 # finding mean status of smoking
@@ -72,7 +78,8 @@ for x in data['smoking_status']:
 smk_most_freq = smk_st[smk_st_cout.index(max(smk_st_cout))]
 # filling unknown smoking data with smoking mean value
 data['smoking_status'] = data['smoking_status'].replace('Unknown', smk_most_freq)
-# print(data)
+print("Filling smoking status unknown values with most frequent values: \n", data['smoking_status'])
+print_hl()
 
 
 # --------- Data cleaning using simpleimputer ----------
@@ -100,6 +107,9 @@ print('by comparing two methods mean bmi using simpleImputer = ', si_bmi_mean,
       'while by calculating with excluding outliers = ', data_bmi_mean)
 print('Replacing Unknown Smoking status with most common:', smk_most_freq)
 print_hl()
+print("Data cleaning using simple imputer (alternative method): \n", simpleimputed_data)
+print_hl()
+
 
 # --------------- filtering outliers --------------------
 
@@ -113,9 +123,7 @@ filtered_avg_glc_data = data.loc[data['avg_glucose_level'].isin(avg_glc_clean)]
 # filtering outliers in both bmi and average glucose level
 filtered_data = filtered_bmi_data.loc[data['avg_glucose_level'].isin(avg_glc_clean)]
 f_data_frame = pd.DataFrame(filtered_data)
-f_data_frame_001 = f_data_frame.copy()
-f_data_frame_002 = f_data_frame.copy()
-print('**** Data Set after excluding outliers an filling missing data ****')
+print('**** Data Set after excluding outliers and filling missing data ****')
 print(filtered_data)
 print_hl()
 
@@ -123,23 +131,27 @@ print_hl()
 
 # ---------- Convert all categorical data into numeric --------------
 Label_Encoder = LabelEncoder()
-for i in data.select_dtypes(include=['object']).columns.tolist():
-    data[i] = Label_Encoder.fit_transform(data[i])
+f_data_frame_004 = f_data_frame.copy()
+for i in f_data_frame_004.select_dtypes(include=['object']).columns.tolist():
+    f_data_frame_004[i] = Label_Encoder.fit_transform(f_data_frame_004[i])
+print("Data after encoding categorical data: \n", f_data_frame_004)
+print_hl()
 
-print(data)
 
 # ---------- Discretization --------------
 discretization = KBinsDiscretizer(n_bins=3, strategy='uniform', encode='ordinal')
-c = discretization.fit(data)
+c = discretization.fit(f_data_frame_004)
 print("Discretization bin edges: ")
 print(c.bin_edges_)
 
-dataframe = discretization.transform(data)
+dataframe = discretization.transform(f_data_frame_004)
 print("Data after discretization: \n", dataframe)
+print_hl()
 
 # ------------------------- Normalization ---------------------------
 normalize_features = ['age', 'avg_glucose_level', 'bmi']
 # --------------- MinMax Normalization ------------------
+f_data_frame_001 = f_data_frame.copy()
 norm_filtered_data_frame = f_data_frame_001
 filtered_num_data_frame = norm_filtered_data_frame[normalize_features]
 normalizer = MinMaxScaler(feature_range=(0, 1))
@@ -150,6 +162,7 @@ print(norm_filtered_data_frame)
 print_hl()
 
 # --------------- z-score Normalization ------------------
+f_data_frame_002 = f_data_frame.copy()
 z_filtered_data_frame = f_data_frame_002
 
 for i in normalize_features:
@@ -159,41 +172,77 @@ print(z_filtered_data_frame)
 print_hl()
 
 # --------------- Correlation Matrix ---------------------
-matrix = data.corr(method='pearson', min_periods=1)
+matrix = f_data_frame_004.corr(method='pearson', min_periods=1)
 print("Correlation matrix: \n", matrix)
-
-# --------------------- train test split ------------------------
-# --------------------- train test split ------------------------
-print('> Test Train Split')
-X = filtered_data
-
-# splitting
-X_train, X_test, Y_train, Y_test = train_test_split(X, test_size=0.2, random_state=42)
-# printing test train sets
-print('> Train Set X')
-print(X_train)
-print('> Test Set X')
-print(X_test)
-print('> Train Set Y')
-print(Y_train)
-print('> Test Set Y')
-print(Y_train)
 print_hl()
 
+# --------------------- train test split ------------------------
+print('> Test Train Split')
+f_data_frame_003 = f_data_frame.copy()
+print(f_data_frame_003['stroke'].value_counts())
+input_features = ['age', 'bmi', 'avg_glucose_level']
+X = f_data_frame_003[input_features]
+Y = f_data_frame_003['stroke']
+
+X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.9, random_state=2)
+print("Input train set: ", X_train.shape)
+print("Input test set: ", X_test.shape)
+print("Output train set: ", y_train.shape)
+print("Output test set: ", y_test.shape)
+print_hl()
 
 # --------------- linear regression ---------------------
+print("Linear regression using correlation rules")
 age_mean = filtered_data.age.mean()
 avg_glc_mean = filtered_data.avg_glucose_level.mean()
 bmi_mean = filtered_data.bmi.mean()
+stroke_mean = filtered_data.stroke.mean()
+# print("Stroke mean: ", stroke_mean)
 # calculating standard deviation
 age_sum = sum((data.age - age_mean)**2)
 avg_glc_sum = sum((data.avg_glucose_level - avg_glc_mean)**2)
 bmi_sum = sum((data.bmi - bmi_mean)**2)
+age_sum_s = sum((data.age - age_mean)*(data.stroke - stroke_mean))
+avg_glc_sum_s = sum((data.avg_glucose_level - avg_glc_mean)*(data.stroke - stroke_mean))
+bmi_sum_s = sum((data.bmi - bmi_mean)*(data.stroke - stroke_mean))
 
-bmi_av_glc = sum((data.bmi - bmi_mean)*(data.avg_glucose_level - avg_glc_mean))
+b1 = age_sum_s / age_sum
+b2 = avg_glc_sum_s / avg_glc_sum
+b3 = bmi_sum_s / bmi_sum
+b0 = stroke_mean - b1*age_mean - b2*avg_glc_mean - b3*bmi_mean
 
-b1 = bmi_av_glc / bmi_sum
-b0 = avg_glc_mean - (b1 * bmi_mean)
+predicted_stroke = b0 + b1*(X_test.age) + b2*(X_test.avg_glucose_level) + b3*(X_test.bmi)
+print("Predicted data: \n", predicted_stroke)
+print_hl()
+print("Accurate data: \n", y_test)
+print_hl()
+
+
+# --------------- Important features ---------------------
+decision_tree = DecisionTreeClassifier()
+drop_features = ['id', 'stroke']
+decision_tree.fit(f_data_frame_004.drop(drop_features, axis=1), f_data_frame_004['stroke'])
+plt.style.use('ggplot')
+plt.bar(decision_tree.feature_names_in_, decision_tree.feature_importances_)
+plt.show()
+
+# --------------- Predictions ---------------------
+# model = LinearRegression()
+# model.fit(X_train, y_train)
+# Y_predict = model.predict(X_test)
+# print("Y predict: \n", Y_predict)
+# results = pd.DataFrame(Y_predict)
+# print(results)
+
+print("** Prediction using logistic regression **")
+model_logistic = LogisticRegression()
+model_logistic.fit(X_train, y_train)
+Y_predict_logistic = model_logistic.predict(X_test)
+print("Y predict logistic: \n", Y_predict_logistic)
+count_p = np.count_nonzero(Y_predict_logistic == 1)
+print("Number of predicted ones: \n", count_p)
+print('Accuracy of logistic regression classifier on test set:'' {:.2f}'.format(model_logistic.score(X_test, y_test)))
+print_hl()
 
 
 # --------------------- plotting ------------------------
@@ -219,7 +268,7 @@ b0 = avg_glc_mean - (b1 * bmi_mean)
 # sns.regplot(x="age", y="avg_glucose_level", data=filtered_data)
 # plt.title("Age / Average glucose level plot without outliers")
 # plt.show()
-# plotting MinMax normalized filtered data
+# # plotting MinMax normalized filtered data
 # sns.regplot(x="bmi", y="avg_glucose_level", data=norm_filtered_data_frame)
 # plt.title("BMI / Average glucose level plot MinMax normalized filtered data")
 # plt.show()
@@ -229,7 +278,7 @@ b0 = avg_glc_mean - (b1 * bmi_mean)
 # sns.regplot(x="age", y="avg_glucose_level", data=norm_filtered_data_frame)
 # plt.title("Age / Average glucose level plot MinMax normalized filtered data")
 # plt.show()
-# plotting z-score normalized filtered data
+# # plotting z-score normalized filtered data
 # sns.regplot(x="bmi", y="avg_glucose_level", data=z_filtered_data_frame)
 # plt.title("BMI / Average glucose level plot z-score normalized filtered data")
 # plt.show()
@@ -239,11 +288,11 @@ b0 = avg_glc_mean - (b1 * bmi_mean)
 # sns.regplot(x="age", y="avg_glucose_level", data=z_filtered_data_frame)
 # plt.title("Age / Average glucose level plot z-score normalized filtered data")
 # plt.show()
-
-
-# --------------------- Boxplot ------------------------
+#
+#
+# # --------------------- Boxplot ------------------------
 # # Boxplot visualization for age
-# sns.boxplot(extracting_age_list)
+# sns.boxplot(data_raw['age'])
 # plt.title("Age before removing outliers")
 # plt.show()
 #
@@ -252,7 +301,7 @@ b0 = avg_glc_mean - (b1 * bmi_mean)
 # plt.show()
 #
 # # Boxplot visualization for avg_glucose
-# sns.boxplot(extracting_avg_glucose_list)
+# sns.boxplot(data_raw['avg_glucose_level'])
 # plt.title("Average glucose level before removing outliers")
 # plt.show()
 #
