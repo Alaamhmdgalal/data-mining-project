@@ -112,6 +112,9 @@ avg_glc_clean = remove_outliers_iqr(data, 'avg_glucose_level')
 filtered_avg_glc_data = data.loc[data['avg_glucose_level'].isin(avg_glc_clean)]
 # filtering outliers in both bmi and average glucose level
 filtered_data = filtered_bmi_data.loc[data['avg_glucose_level'].isin(avg_glc_clean)]
+f_data_frame = pd.DataFrame(filtered_data)
+f_data_frame_001 = f_data_frame.copy()
+f_data_frame_002 = f_data_frame.copy()
 print('**** Data Set after excluding outliers an filling missing data ****')
 print(filtered_data)
 print_hl()
@@ -137,7 +140,7 @@ print("Data after discretization: \n", dataframe)
 # ------------------------- Normalization ---------------------------
 normalize_features = ['age', 'avg_glucose_level', 'bmi']
 # --------------- MinMax Normalization ------------------
-norm_filtered_data_frame = pd.DataFrame(filtered_data)
+norm_filtered_data_frame = f_data_frame_001
 filtered_num_data_frame = norm_filtered_data_frame[normalize_features]
 normalizer = MinMaxScaler(feature_range=(0, 1))
 norm_data_frame = normalizer.fit_transform(filtered_num_data_frame)
@@ -147,7 +150,7 @@ print(norm_filtered_data_frame)
 print_hl()
 
 # --------------- z-score Normalization ------------------
-z_filtered_data_frame = pd.DataFrame(filtered_data)
+z_filtered_data_frame = f_data_frame_002
 
 for i in normalize_features:
     z_filtered_data_frame[i] = zscore(z_filtered_data_frame[i])
