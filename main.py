@@ -25,6 +25,17 @@ def print_hl():
 
 # ---------- removing outliers algorithms --------------
 
+# remove outliers using std
+def remove_outliers_std(data_with_outliers, col):
+    data_mean, data_std = mean(data_with_outliers[col]), std(data_with_outliers[col])
+    cut_off = data_std * 3
+    lower, upper = data_mean - cut_off, data_mean + cut_off
+    outliers = [x for x in data_with_outliers[col] if x < lower or x > upper]
+    # print('Identified outliers: %d' % len(outliers))
+    outliers_removed = [x for x in data_with_outliers[col] if x >= lower and x <= upper]
+    # print('Non-outlier observations: %d' % len(outliers_removed))
+    return outliers_removed
+
 # remove outliers using IQR
 def remove_outliers_iqr(data_with_outliers, col):
     Q3 = np.quantile(data_with_outliers[col], 0.75)
@@ -112,6 +123,23 @@ print_hl()
 
 
 # --------------- filtering outliers --------------------
+
+# ---------------------- std method -----------------------------
+unfiltered_data_frame_001 = data.copy()
+# print('unfiltered Data')
+# print(unfiltered_data_frame_001)
+# trying std method
+print('> removing outliers using std')
+# bmi filtering
+std_filtered_bmi = remove_outliers_std(unfiltered_data_frame_001,'bmi')
+std_filtered_data = unfiltered_data_frame_001.loc[data['bmi'].isin(std_filtered_bmi)]
+# avg glucose level filtering
+std_filtered_avg_glc = remove_outliers_std(std_filtered_data,'avg_glucose_level')
+std_filtered_data = std_filtered_data.loc[data['avg_glucose_level'].isin(std_filtered_avg_glc)]
+print('> data without outliers using std method')
+print(std_filtered_data)
+
+# ---------------------- iqr method -----------------------------
 
 # no age outliers
 # filtering outliers in bmi
