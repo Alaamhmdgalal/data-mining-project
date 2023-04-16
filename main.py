@@ -12,8 +12,11 @@ from sklearn.preprocessing import KBinsDiscretizer
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.svm import SVC
 from numpy import mean
 from numpy import std
+
 
 plt.style.use("seaborn-v0_8")
 
@@ -257,13 +260,6 @@ plt.bar(decision_tree.feature_names_in_, decision_tree.feature_importances_)
 plt.show()
 
 # --------------- Predictions ---------------------
-# model = LinearRegression()
-# model.fit(X_train, y_train)
-# Y_predict = model.predict(X_test)
-# print("Y predict: \n", Y_predict)
-# results = pd.DataFrame(Y_predict)
-# print(results)
-
 print("** Prediction using logistic regression **")
 model_logistic = LogisticRegression()
 model_logistic.fit(X_train, y_train)
@@ -272,6 +268,26 @@ print("Y predict logistic: \n", Y_predict_logistic)
 count_p = np.count_nonzero(Y_predict_logistic == 1)
 print("Number of predicted ones: \n", count_p)
 print('Accuracy of logistic regression classifier on test set:'' {:.2f}'.format(model_logistic.score(X_test, y_test)))
+print_hl()
+
+print("** Prediction using KNN **")
+model_knn = KNeighborsClassifier()
+model_knn.fit(X_train, y_train)
+Y_predict_knn = model_knn.predict(X_test)
+print("Y predict knn: \n", Y_predict_knn)
+count_knn = np.count_nonzero(Y_predict_knn == 1)
+print("Number of predicted ones: \n", count_knn)
+print('Accuracy of KNN classifier on test set:'' {:.2f}'.format(model_knn.score(X_test, y_test)))
+print_hl()
+
+print("** Prediction using SVM **")
+model_svm = SVC()
+model_svm.fit(X_train, y_train)
+Y_predict_svm = model_svm.predict(X_test)
+print("Y predict SVM: \n", Y_predict_svm)
+count_svm = np.count_nonzero(Y_predict_svm == 1)
+print("Number of predicted ones: \n", count_svm)
+print('Accuracy of SVM classifier on test set:'' {:.2f}'.format(model_svm.score(X_test, y_test)))
 print_hl()
 
 
