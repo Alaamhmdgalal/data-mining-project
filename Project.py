@@ -203,6 +203,7 @@ from sklearn.tree import plot_tree
 x = f_data_frame.loc[:, f_data_frame.columns != 'stroke']
 x = x.loc[:, x.columns != 'id']
 y = f_data_frame['stroke']
+# stratify??
 x_train, x_test, y_train, y_test = train_test_split(x, y, stratify=y, test_size=0.2)
 
 print("> Train Data:", y_train.shape[0])
@@ -223,21 +224,22 @@ print_hl()
 
 # Using Decision Tree Classifier to create the model
 
-clf = DecisionTreeClassifier()
-clf = clf.fit(x_train, y_train)
+dtc = DecisionTreeClassifier()
+dtc = dtc.fit(x_train, y_train)
 
 # predict stroke
-res = clf.predict(x_test)
+res_dt = dtc.predict(x_test)
 
 from sklearn.metrics import accuracy_score
 
-accuracy = accuracy_score(y_test, res)
+print("Decision tree predicted = ", res_dt)
+accuracy = accuracy_score(y_test, res_dt)
 print("Accuracy = ", accuracy)
 
-res_df = pd.DataFrame(res, columns=['stroke_prediction'])
-print("> prediction result:", res_df.shape[0])
-print(res_df.value_counts())
-res_df['stroke_prediction'].value_counts().plot(kind='bar')
+res_df_dt = pd.DataFrame(res_dt, columns=['stroke_prediction'])
+print("> prediction result:", res_df_dt.shape[0])
+print(res_df_dt.value_counts())
+res_df_dt['stroke_prediction'].value_counts().plot(kind='bar')
 plt.show()
 
 # Finding vital role attributes
@@ -246,25 +248,65 @@ print("Features sorted from least important according to Decision Tree:")
 print_hl()
 c = 1
 data_features = x_train.columns
-sort = clf.feature_importances_.argsort()
+sort = dtc.feature_importances_.argsort()
 sort
 for i in sort:
-    print("{:<5} {:<20} {:<5} {:<20} ".format(c, data_features[i], ' | ', clf.feature_importances_[i]))
+    print("{:<5} {:<20} {:<5} {:<20} ".format(c, data_features[i], ' | ', dtc.feature_importances_[i]))
     print_hl()
     c = c + 1
 
-plot_feature_importance(clf.feature_importances_, x_train.columns, 'RANDOM FOREST')
+plot_feature_importance(dtc.feature_importances_, x_train.columns, 'DECISION TREE ')
 plt.show()
 print_hl()
 
-# Classification Using Random forrest regressioin:
+# Classification Using Random forrest regression:
 
 from sklearn.ensemble import RandomForestRegressor
+
+rf = RandomForestRegressor(n_estimators=100)
+rf.fit(x_train, y_train)
+
+res_rf = rf.predict(x_test)
+
+
+print("Random forest predicted = ", res_rf)
+
+
+# Classification Using Naive bayes classifier:
+
+from sklearn.naive_bayes import GaussianNB
 from sklearn.inspection import permutation_importance
 
-rf = RandomForestRegressor(n_estimators=150)
-rf.fit(x_train, y_train)
-sort = rf.feature_importances_.argsort()
-plot_feature_importance(rf.feature_importances_, x_train.columns, 'RANDOM FOREST')
+nb = GaussianNB()
+nb.fit(x_train, y_train)
+
+res_nb = nb.predict(x_test)
+
+print("Naive bayes predicted = ", res_nb)
+accuracy_nb = accuracy_score(y_test, res_nb)
+print("Accuracy = ", accuracy_nb)
+
+res_df_nb = pd.DataFrame(res_nb, columns=['stroke_prediction'])
+print("> prediction result:", res_df_nb.shape[0])
+print(res_df_nb.value_counts())
+res_df_nb['stroke_prediction'].value_counts().plot(kind='bar')
 plt.show()
+
+print("Features sorted from least important according to Naive Bayes:")
+print_hl()
+
+c = 1
+data_features = x_train.columns
+imps = permutation_importance(nb, x_test, y_test)
+sort = imps.importances_mean.argsort()
+sort
+for i in sort:
+    print("{:<5} {:<20} {:<5} {:<20} ".format(c, data_features[i], ' | ', imps.importances_mean[i]))
+    print_hl()
+    c = c + 1
+
+plot_feature_importance(imps.importances_mean, x_train.columns, 'NAIVE BAYES ')
+plt.show()
+print_hl()
+
 # Visualize Data
